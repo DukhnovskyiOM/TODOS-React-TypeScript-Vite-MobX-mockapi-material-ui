@@ -4,6 +4,7 @@ import { Todos } from "../models/todos";
 import { getTodos } from "../api/getTodos";
 import { postTodos } from "../api/postTodos";
 import { deleteTodos } from "../api/deleteTodos";
+import { putTodos } from "../api/putTodos";
 
 class TodosStore {
   todos?: IPromiseBasedObservable<Todos[]>;
@@ -64,9 +65,23 @@ class TodosStore {
         }
   };
 
-  changeStatusTodos = (todo: Todos) => {
+  changeStatusTodos = async (todo: Todos) => {
     const index = this.localTodos.findIndex(e => e.id === todo.id);
-    this.localTodos[index].status = !this.localTodos[index].status;
+    const newTodo = {
+      id: todo.id,
+      name: todo.name,
+      status: !this.localTodos[index].status,
+    };
+    try {
+      if(todo.id){
+        const data = await putTodos(newTodo, todo.id);
+        runInAction(() => {
+          this.localTodos[index] = data;
+        });
+      }
+    } catch (error) {
+      alert(error);
+    }
   };
 }
 
